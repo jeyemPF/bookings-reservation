@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import  jwt  from "jsonwebtoken";
 import { createError } from "../utils/error.js";
 
 export const verifyToken = (req, res, next) => {
@@ -15,7 +15,7 @@ export const verifyToken = (req, res, next) => {
 };
 
 export const verifyUser = (req, res, next) => {
-  verifyToken(req, res, () => {
+  verifyToken(req, res, next, () => {
     if (req.user.id === req.params.id || req.user.isAdmin) {
       next();
     } else {
@@ -25,11 +25,18 @@ export const verifyUser = (req, res, next) => {
 };
 
 export const verifyAdmin = (req, res, next) => {
-  verifyToken(req, res, () => {
+  verifyToken(req, res, (err) => {
+    if (err) {
+      console.error('Token verification error:', err);
+      return next(createError(403, 'You are not authorized!'));
+    }
+
+    console.log('User role:', req.user.isAdmin ? 'Admin' : 'Regular User');
+
     if (req.user.isAdmin) {
       next();
     } else {
-      return next(createError(403, "You are not authorized!"));
+      return next(createError(403, 'You are not authorized!'));
     }
   });
 };
